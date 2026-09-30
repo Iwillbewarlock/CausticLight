@@ -1,0 +1,52 @@
+{
+    // true: log each active zone's inputs/outputs, the GPU time and the water scan once per second
+    "debug": false,
+    // true: the shader tints zone pixels flatly instead of drawing the caustic (data check)
+    "debugTint": false,
+    // debugTint brightness: the zone is multiplied by 1 + this (1.0 = twice as bright), 0.01..4
+    "debugTintStrength": 1.0,
+
+    // find the water around the player by itself (interiors). Needs no zone below.
+    "autoZones": true,
+    // also outdoors: sunlit (day) and moonlit (night) water, automatic and manual zones. Still being tested in game.
+    "autoZonesOutdoors": true,
+
+    // which renderer to follow for light units: auto (detect), cs (Community Shaders), enb, vanilla.
+    // enb without ENB installed runs the ENB path with multipliers 1 (a code check), and says so in the log.
+    "renderer": "auto",
+    // under ENB, watch the renderer for Surface Tides' wave field (off by default: ENB wraps the renderer; untested)
+    "tidesWatchUnderEnb": false,
+
+    // camera distance to a zone beyond which it drops out of the shader data
+    // how far the caustics reach: the game's shadow distance (fShadowDistance, followed live) when true, else maxDistance
+    "maxDistanceFromShadows": true,
+    "maxDistance": 3000,
+
+    // update rates (per second)
+    "tickHz": 10,       // smoothing, layer weights, playback speed, ripple, GPU record
+    "weatherHz": 1,     // weather / game hour
+    "actorHz": 4,       // actors in water + key light
+    "placementHz": 2,   // active-zone check
+
+    "actorRange": 600,
+    "lightSearchRange": 1500,
+    "impulseDecaySeconds": 1.5,
+
+    // In game, control it from the console (the values are stored in the save):
+    //   set CL_Enabled to 0 / 1     caustics off / on (for A/B screenshots)
+    //   set CL_Strength to N        strength, 0..50 (default 6.4, chosen to show: 3 x the 2.14 that matches a path-traced reference)
+    //   set CL_DebugTint to 0       normal view
+    //   set CL_DebugTint to 1       flat tint over each zone's reach (overrides "debugTint" above)
+    //   set CL_DebugTint to 2       where the reflected light lands (blue)
+    //   set CL_DebugTint to 3       how much the reflected lamps light each face directly (orange)
+    //   set CL_Corner to 1          aim at the water: one corner of a new manual zone; do it again at
+    //                               the opposite corner to add the zone (saved into this file)
+    //   set CL_Remove to 1          remove the manual zone under the crosshair
+    // Adding / removing rewrites this file: comments are not kept.
+
+    // Manual zones (optional; an active manual zone turns the automatic one off in its cell):
+    // rect = [minX, minY, maxX, maxY] in world units on the plane z = waterZ, e.g.
+    //   { "name": "example", "cell": "0x1234~Skyrim.esm", "waterZ": -128.0, "rect": [-400, -300, 400, 300],
+    //     "height": 1000, "baseAgitation": 0.2, "brightness": 1.0 }
+    "zones": []
+}

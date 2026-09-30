@@ -1,0 +1,35 @@
+CausticLight
+Copyright (c) 2026 qtuna (Iwillbewarlock)
+
+Licensed under the GNU General Public License, version 3 (GPL-3.0-only). See LICENSE.
+
+Credits and provenance
+
+Community Shaders (GPL-3.0)
+  https://github.com/community-shaders/skyrim-community-shaders
+  plugin/src/Hooks.cpp hooks two engine call sites whose references also appear in Community Shaders:
+    RelocationID(35560, 36559) + 0x395          (src/Features/TerrainBlending.h, Main_RenderDepth)
+    RelocationID(99938, 106583) + 0x319 / 0x308 (src/Deferred.h, Main_RenderWorld_BlendedDecals)
+  Credit to the Community Shaders contributors (including doodlum and Alan Tse) for these references.
+
+Dynamic Terrain Deformation (GPL-3.0-only), by NearMidnightNow (Maglarnet / NMN)
+  https://github.com/maglarnet/Dynamic_Terrain_Deformation_Skse
+  The same two call sites were learned from its src/Hooks.cpp, which hooks them the same way
+  (checking for a call opcode, then write_call chaining to the previous target).
+
+Surface Tides (GPL-3.0-or-later)
+  https://www.nexusmods.com/skyrimspecialedition/mods/191955
+  plugin/shaders/CausticPass.hlsl and plugin/src/DrawPass.cpp read Surface Tides' water field at runtime.
+  The field's constant-buffer layout and its edge fade follow Surface Tides' Shaders/SurfaceTides/SurfaceField.hlsli
+  so that the same data is read the same way. No Surface Tides file is shipped or modified.
+
+caustic-volume (MIT), by ScottieFox
+  https://github.com/ScottieFox/caustic-volume
+  tools/gen.cjs (the caustic pattern generator) started from its wave recipe. Its license is shipped as
+  "CausticLight - caustic-volume LICENSE.txt".
+
+CommonLibSSE-NG (MIT)
+  https://github.com/alandtse/CommonLibVR (ng), used as plugin/extern/CommonLibSSE-NG.
+
+Other dependencies (through vcpkg) remain under their own licences: DirectXTK, DirectXMath, fmt, spdlog,
+nlohmann-json, rapidcsv, xbyak.

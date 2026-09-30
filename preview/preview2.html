@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>물결 세기 미리보기</title>
+<style>
+  :root { --bg: #0d1116; --fg: #d8e2ea; --dim: #8796a3; --line: #243140; --tint: #9fd8ff; --acc: #5fb3e6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 system-ui, "Malgun Gothic", sans-serif; padding: 24px 16px 40px; }
+  main { max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: var(--dim); margin: 0 0 18px; }
+  .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; align-items: start; }
+  @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+  .view { position: relative; width: 100%; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: #000; isolation: isolate; }
+  canvas { display: block; width: 100%; height: 100%; }
+  .view.tint::after { content: ""; position: absolute; inset: 0; background: var(--tint); mix-blend-mode: multiply; }
+  .side { display: flex; flex-direction: column; gap: 16px; }
+  .meter { font-size: 28px; font-weight: 600; }
+  .meter small { display: block; font-size: 14px; font-weight: 400; color: var(--dim); }
+  input[type=range] { width: 100%; accent-color: var(--acc); }
+  .ticks { display: flex; justify-content: space-between; color: var(--dim); font-size: 13px; margin-top: -6px; }
+  button { background: #1b2530; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; font: inherit; cursor: pointer; }
+  button[aria-pressed=true] { border-color: var(--acc); color: var(--acc); }
+  .mix { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; font-size: 14px; color: var(--dim); }
+  .mix i { display: block; height: 6px; background: var(--acc); border-radius: 3px; }
+  label { display: flex; gap: 8px; align-items: center; color: var(--dim); }
+</style>
+</head>
+<body>
+<main>
+  <h1>물결 세기에 따라 바뀌는 물빛</h1>
+  <p>잔잔한 물, 보통, 거친 물 세 벌의 무늬를 만들었습니다. 막대를 움직이면 게임에서 날씨가 바뀔 때처럼, 무늬가 서서히 섞여 바뀌고 재생도 빨라집니다. 화면은 무늬 한 장을 가로세로 두 번씩 이어 붙인 것입니다.</p>
+  <div class="wrap">
+    <div class="view" id="view">
+      <canvas id="cv" width="512" height="512"></canvas>
+    </div>
+    <div class="side">
+      <div class="meter" id="meter"></div>
+      <div>
+        <input id="s" type="range" min="0" max="100" value="0" aria-label="물결 세기">
+        <div class="ticks"><span>잔잔</span><span>보통</span><span>거침</span></div>
+      </div>
+      <button id="auto" aria-pressed="false">날씨 자동 변화 보기</button>
+      <div class="mix" id="mix"></div>
+      <label><input id="tint" type="checkbox"> 물빛 색 입혀 보기</label>
+      <button id="play">일시정지</button>
+    </div>
+  </div>
+</main>
+<script>
+const SETS = ['set_calm', 'set_normal', 'set_rough'], NAMES = ['잔잔', '보통', '거침'], F = 64;
+const urls = SETS.map(d => Array.from({ length: F }, (_, i) => `${d}/f${String(i).padStart(3, '0')}.png`));
+const imgs = urls.map(set => set.map(u => { const im = new Image(); im.src = u; return im; }));
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d'), sl = document.getElementById('s');
+const mixEl = document.getElementById('mix');
+mixEl.innerHTML = NAMES.map((n, i) => `<span>${n}</span><span><i id="b${i}"></i></span><span id="p${i}"></span>`).join('');
+let frame = 0, last = performance.now(), playing = true, auto = false, autoT = 0;
+// weights: 0 -> calm, 0.5 -> normal, 1 -> rough, blended in between
+function weights(s) { return s < 0.5 ? [1 - 2 * s, 2 * s, 0] : [0, 2 - 2 * s, 2 * s - 1]; }
+function tick(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (auto) { autoT += dt; sl.value = Math.round(50 - 50 * Math.cos(autoT * 2 * Math.PI / 24)); }   // calm -> storm -> calm every 24 s
+  const s = sl.value / 100, w = weights(s), fps = 8 * (1 + 1.25 * s);
+  if (playing) frame = (frame + fps * dt) % F;
+  const f = Math.floor(frame);
+  // the sets add up as light, each at its weight, one tile drawn 2 x 2
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 512, 512);
+  ctx.globalCompositeOperation = 'lighter';
+  imgs.forEach((set, i) => { const im = set[f]; if (!w[i] || !im.complete) return; ctx.globalAlpha = w[i];
+    for (const [x, y] of [[0, 0], [256, 0], [0, 256], [256, 256]]) ctx.drawImage(im, x, y, 256, 256); });
+  w.forEach((x, i) => { document.getElementById('b' + i).style.width = `${x * 100}%`; document.getElementById('p' + i).textContent = `${Math.round(x * 100)}%`; });
+  document.getElementById('meter').innerHTML = `물결 세기 ${sl.value}<small>초당 ${fps.toFixed(1)}장 재생</small>`;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+document.getElementById('auto').onclick = e => { auto = !auto; e.target.setAttribute('aria-pressed', auto); autoT = Math.acos(1 - sl.value / 50) * 24 / (2 * Math.PI); };
+sl.oninput = () => { if (auto) document.getElementById('auto').click(); };
+document.getElementById('play').onclick = e => { playing = !playing; e.target.textContent = playing ? '일시정지' : '재생'; };
+document.getElementById('tint').onchange = e => document.getElementById('view').classList.toggle('tint', e.target.checked);
+</script>
+</body>
+</html>

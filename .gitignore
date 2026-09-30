@@ -1,0 +1,14 @@
+*.user
+build/
+plugin/build/
+plugin/out/
+preview/prev_*/
+preview/render/
+preview/set_*/
+preview/var_*/
+reference/
+work/
+work/
+
+tools/local-paths.ps1
+release/*.zip

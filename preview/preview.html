@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>물빛 무늬 미리보기</title>
+<style>
+  :root { --bg: #0d1116; --fg: #d8e2ea; --dim: #8796a3; --line: #243140; --tint: #9fd8ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 system-ui, "Malgun Gothic", sans-serif; padding: 24px 16px 40px; }
+  main { max-width: 1120px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: var(--dim); margin: 0 0 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  figure { margin: 0; }
+  .tile { width: 100%; aspect-ratio: 1; background-size: 50% 50%; background-repeat: repeat; border: 1px solid var(--line); border-radius: 6px; }
+  .tile.tint { background-blend-mode: multiply; background-color: var(--tint); }
+  figcaption { margin-top: 8px; }
+  figcaption b { display: block; }
+  figcaption span { color: var(--dim); font-size: 14px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 0 0 20px; color: var(--dim); }
+  button { background: #1b2530; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  label { display: flex; gap: 8px; align-items: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>물빛 무늬 미리보기</h1>
+  <p>각 칸에는 같은 무늬 한 장을 가로세로 두 번씩 이어 붙였습니다. 이음새가 보이지 않아야 정상입니다. 64장면이 한 바퀴 돌면 처음 장면으로 끊김 없이 이어집니다.</p>
+  <div class="bar">
+    <button id="play">일시정지</button>
+    <label>빠르기 <input id="fps" type="range" min="4" max="20" step="1" value="10"> <span id="fpsOut"></span></label>
+    <label><input id="tint" type="checkbox"> 물빛 색 입혀 보기</label>
+    <span id="frame"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+const SETS = [
+  { dir: 'prev_0.8', name: '부드러운 그물', note: '물과 벽이 가까울 때. 선이 굵고 흐릿합니다.' },
+  { dir: 'prev_1.4', name: '중간', note: '선이 또렷하고 칸이 고르게 나뉩니다.' },
+  { dir: 'prev_2.0', name: '날카로운 선', note: '물과 벽이 멀 때. 선이 가늘고 밝은 점이 생깁니다.' },
+];
+const F = 64, grid = document.getElementById('grid'), tiles = [];
+for (const s of SETS) {
+  const fig = document.createElement('figure');
+  fig.innerHTML = `<div class="tile"></div><figcaption><b>${s.name}</b><span>${s.note}</span></figcaption>`;
+  grid.appendChild(fig);
+  const urls = Array.from({ length: F }, (_, i) => `${s.dir}/f${String(i).padStart(3, '0')}.png`);
+  urls.forEach(u => { const im = new Image(); im.src = u; });   // preload
+  tiles.push({ el: fig.firstChild, urls });
+}
+let f = 0, playing = true, timer = null;
+const fps = document.getElementById('fps'), fpsOut = document.getElementById('fpsOut');
+function draw() { for (const t of tiles) t.el.style.backgroundImage = `url(${t.urls[f]})`; document.getElementById('frame').textContent = `장면 ${f + 1} / ${F}`; }
+function start() { clearInterval(timer); fpsOut.textContent = `초당 ${fps.value}장 (한 바퀴 ${(F / fps.value).toFixed(1)}초)`; if (playing) timer = setInterval(() => { f = (f + 1) % F; draw(); }, 1000 / fps.value); }
+fps.oninput = start;
+document.getElementById('play').onclick = e => { playing = !playing; e.target.textContent = playing ? '일시정지' : '재생'; start(); };
+document.getElementById('tint').onchange = e => tiles.forEach(t => t.el.classList.toggle('tint', e.target.checked));
+draw(); start();
+</script>
+</body>
+</html>

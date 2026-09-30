@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>물빛 판 미리보기</title>
+<style>
+  :root { --bg: #0d1116; --fg: #d8e2ea; --dim: #8796a3; --line: #243140; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 system-ui, "Malgun Gothic", sans-serif; padding: 24px 16px 40px; }
+  main { max-width: 1040px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: var(--dim); margin: 0 0 18px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  button { background: #1b2530; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; font: inherit; cursor: pointer; }
+  button[aria-pressed=true] { border-color: #5fb3e6; color: #5fb3e6; }
+  img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; }
+  .note { margin-top: 12px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>완성된 물빛 판 미리보기</h1>
+  <p>실제로 만든 모델 파일을 읽어서 그렸습니다. 판의 모양, 가장자리 흐림, 장면 넘기기 순서가 모두 모델 파일에 적힌 그대로입니다. 벽돌 벽과 물은 비교용으로 그린 가짜 배경입니다.</p>
+  <div class="tabs" id="tabs"></div>
+  <img id="view" alt="물빛 판 애니메이션">
+  <p class="note" id="note"></p>
+</main>
+<script>
+fetch('render/scenes.json').then(r => r.json()).then(meta => {
+  const tabs = document.getElementById('tabs'), view = document.getElementById('view');
+  let scene = Object.keys(meta.scenes)[0], f = 0;
+  const urls = {};
+  for (const [k, label] of Object.entries(meta.scenes)) {
+    urls[k] = Array.from({ length: meta.frames }, (_, i) => `render/${k}/f${String(i).padStart(3, '0')}.png`);
+    urls[k].forEach(u => { const im = new Image(); im.src = u; });
+    const b = document.createElement('button'); b.textContent = label; b.setAttribute('aria-pressed', k === scene);
+    b.onclick = () => { scene = k; [...tabs.children].forEach(c => c.setAttribute('aria-pressed', c === b)); };
+    tabs.appendChild(b);
+  }
+  document.getElementById('note').textContent = `한 바퀴 ${meta.loop}초 (게임 기본 속도). 여기서는 ${meta.frames}장만 뽑아 보여 줍니다. 게임에서는 64장입니다.`;
+  setInterval(() => { f = (f + 1) % meta.frames; view.src = urls[scene][f]; }, meta.loop * 1000 / meta.frames);
+});
+</script>
+</body>
+</html>

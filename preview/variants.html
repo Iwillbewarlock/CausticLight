@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>물빛 무늬 비교</title>
+<style>
+  :root { --bg: #0d1116; --fg: #d8e2ea; --dim: #8796a3; --line: #243140; --acc: #5fb3e6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 system-ui, "Malgun Gothic", sans-serif; padding: 24px 16px 40px; }
+  main { max-width: 1120px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: var(--dim); margin: 0 0 16px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 18px; color: var(--dim); }
+  button { background: #1b2530; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  input[type=range] { accent-color: var(--acc); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  canvas { display: block; width: 100%; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 6px; background: #000; }
+  figcaption { margin-top: 8px; }
+  figcaption b { display: block; }
+  figcaption span { color: var(--dim); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>물빛 무늬 세 가지 비교</h1>
+  <p>세 칸 모두 같은 물결 세기(보통)이고, 무늬 한 장을 가로세로 두 번씩 이어 붙였습니다. 움직일 때 옆으로 흘러가는지, 제자리에서 일렁이는지를 보시면 됩니다. 실사 영상 30개에서는 대부분 제자리에서 모양만 바뀌었습니다.</p>
+  <div class="bar">
+    <button id="play">일시정지</button>
+    <label>빠르기 <input id="fps" type="range" min="4" max="32" step="1" value="16"> <span id="fpsOut"></span></label>
+    <span id="frame"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+const SETS = [
+  { dir: 'var_net', name: '① 지금 무늬 (사방 그물)', note: '물결이 모든 방향에서 옵니다. 고른 그물이고, 무늬가 조금씩 흘러갑니다.' },
+  { dir: 'var_stripe', name: '② 줄무늬형', note: '물결을 한 방향 부채꼴(70°) 안에 모았습니다. 칸이 한쪽으로 길어져 줄무늬와 그물이 섞입니다.' },
+  { dir: 'var_stand', name: '③ 줄무늬 + 제자리 일렁임', note: '②에 반대 방향 물결을 더했습니다. 흘러가는 대신 제자리에서 끓듯이 바뀝니다.' },
+];
+const F = 64, grid = document.getElementById('grid'), views = [];
+for (const s of SETS) {
+  const fig = document.createElement('figure'); fig.style.margin = '0';
+  const cv = document.createElement('canvas'); cv.width = 496; cv.height = 496;
+  fig.appendChild(cv);
+  const cap = document.createElement('figcaption'); cap.innerHTML = `<b>${s.name}</b><span>${s.note}</span>`; fig.appendChild(cap);
+  grid.appendChild(fig);
+  const imgs = Array.from({ length: F }, (_, i) => { const im = new Image(); im.src = `${s.dir}/f${String(i).padStart(3, '0')}.png`; return im; });
+  views.push({ ctx: cv.getContext('2d'), imgs });
+}
+let f = 0, playing = true, last = performance.now(), acc = 0;
+const fps = document.getElementById('fps'), fpsOut = document.getElementById('fpsOut');
+function draw() {
+  for (const v of views) { const im = v.imgs[f]; if (!im.complete) continue; for (const [x, y] of [[0, 0], [248, 0], [0, 248], [248, 248]]) v.ctx.drawImage(im, x, y, 248, 248); }
+  document.getElementById('frame').textContent = `장면 ${f + 1} / ${F}`;
+}
+function tick(now) {
+  const dt = (now - last) / 1000; last = now;
+  fpsOut.textContent = `초당 ${fps.value}장 (한 바퀴 ${(F / fps.value).toFixed(1)}초)`;
+  if (playing) { acc += dt * fps.value; while (acc >= 1) { f = (f + 1) % F; acc -= 1; } }
+  draw(); requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+document.getElementById('play').onclick = e => { playing = !playing; e.target.textContent = playing ? '일시정지' : '재생'; };
+</script>
+</body>
+</html>

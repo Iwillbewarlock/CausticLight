@@ -1,0 +1,81 @@
+=== Mod name ===
+CausticLight - Water Caustics
+
+=== Version ===
+1.0.0
+
+=== Category ===
+Visuals and Graphics
+
+=== Summary (short description, under 255 characters) ===
+Water now throws light. Lamps, torches, magelight, the sun and the moon reflect off rippling water onto walls, bridge undersides and pool floors - found automatically, shadowed correctly, matched to path-traced renders.
+
+=== Requirements ===
+- SKSE64
+- Address Library for SKSE Plugins
+- Skyrim Special Edition or Anniversary Edition (VR is not supported)
+Optional: Community Shaders, Surface Tides
+
+=== Description (BBCode) ===
+[center][size=6][b]CausticLight[/b][/size]
+[size=3][i]Light that dances off the water[/i][/size][/center]
+
+Stand under a bridge beside a canal at night and you will see it: a soft, shifting net of light cast up from the water by the lamps nearby. Skyrim has never had it. [b]CausticLight[/b] adds it, on walls, ceilings, bridge undersides and pool floors, with an SKSE plugin that draws one light pass of its own. No shader files are replaced.
+
+[size=4][b]Nothing to set up[/b][/size]
+[list]
+[*][b]It finds the water.[/b] Indoors and outdoors, CausticLight maps the water around you in under a second. No zones, no patches, no per-location work.
+[*][b]It uses the lights that are really there.[/b] Placed lamps, the torch in your hand, spell light, magelight, Light Placer lights, the sun and the moon. The three that reach the water most strongly are reflected, each in its own colour.
+[*][b]It respects walls.[/b] Every reflected light only lights the water it can actually reach, so a lamp in the next room never shines through the wall and the water under a bridge stays out of the sun.
+[*][b]It is as bright as it should be.[/b] Reflected light is weighed against the light a surface already receives: a bridge underside turned away from the lamp glows clearly, while a wall the lamp lights head-on shows only a gentle shimmer. The physical strength was matched against Blender Cycles path-traced renders; the default is set somewhat above it so the effect reads in game, and you can dial it back.
+[*][b]It moves with the water.[/b] Weather, wind and swimmers change the pattern. With [url=https://www.nexusmods.com/skyrimspecialedition/mods/191955]Surface Tides[/url] installed, the pattern is taken from the real simulated water surface, down to the ripples you make as you wade.
+[*][b]It reaches the pool floor.[/b] Light bent by the surface gathers into bands on the bottom, fading with depth and murk.
+[*][b]It behaves like a shadow at a distance.[/b] Caustics reach as far as your shadow distance and fade out where the shadows do.
+[*][b]It stays calm.[/b] Lights do not trade places over small changes, and a torch's flicker is smoothed, so nothing strobes.
+[/list]
+
+[size=4][b]Settings[/b][/size]
+[code]Data\SKSE\Plugins\CausticLight.ini[/code]
+Changes apply within a second or two, even with the game running.
+[list]
+[*][b]fStrength[/b] (6.4) - how bright the reflected light is. 2.14 is the physically matched value; 0 turns it off.
+[*][b]fRippleContrast[/b] (1.0) - how strongly the ripple pattern shows. 0 gives an even glow, up to 3.
+[*][b]fFloorStrength[/b] (1.0) - the pattern on pool floors.
+[*][b]bFollowShadowDistance[/b] (1) / [b]fMaxDistance[/b] (3000) - how far the effect reaches.
+[*][b]bUseSurfaceTides[/b] (1) - use Surface Tides' water when it is installed.
+[/list]
+Console: [i]set CL_Enabled to 0[/i] / [i]1[/i] to switch it off and on; [i]set CL_Strength to N[/i] to try a strength for the current session.
+
+[size=4][b]Compatibility[/b][/size]
+[list]
+[*][b]Community Shaders[/b] - supported. Linear lighting and inverse-square lights are read and matched. No CS files are touched.
+[*][b]ENB[/b] - supported in code (light multipliers are read through the ENB SDK) but [b]not yet tested in game[/b]. If you use ENB, please share the [i]renderer light: ENB[/i] and [i]ENB light multipliers[/i] lines from [i]Documents\My Games\Skyrim Special Edition\SKSE\CausticLight.log[/i], and tell me whether caustics appear near lit water, whether anything flickers, and whether opening the ENB editor (Shift+Enter) is fine.
+[*][b]Light Placer[/b] - its lights are reflected and shadowed like placed lamps.
+[*][b]Particle lights[/b] (the glow lights of CS / ENB) exist only inside the renderer and cannot be reflected.
+[*]ESL-flagged plugin with no masters. Safe to install or remove mid-playthrough.
+[/list]
+
+[size=4][b]Performance[/b][/size]
+Around 0.15-0.2 ms per frame on an RTX 3070 laptop with the whole screen over water, peaking near 0.5 ms.
+
+[size=4][b]Known limits[/b][/size]
+[list]
+[*]Whether something blocks the light between the water and a wall is only known for what is on screen.
+[*]Puddles narrower than about 1.6 m can be missed.
+[*]ENB's time-of-day curve for its light multipliers is not public and is blended linearly.
+[/list]
+
+[size=4][b]Source[/b][/size]
+CausticLight is open source under GPL-3.0: [url=https://github.com/Iwillbewarlock/CausticLight]https://github.com/Iwillbewarlock/CausticLight[/url]
+
+[size=4][b]Credits[/b][/size]
+[list]
+[*][b]Community Shaders[/b] contributors - the two engine call sites CausticLight hooks come from Community Shaders' references.
+[*][b]NearMidnightNow[/b] (Dynamic Terrain Deformation) - those call sites were learned from DTD's hooks.
+[*][b]Surface Tides[/b] and its author - CausticLight reads its water simulation, following its data layout.
+[*][b]ScottieFox[/b] ([i]caustic-volume[/i], MIT, license included) - the built-in ripple pattern generator began from its wave recipe.
+[*][b]CommonLibSSE-NG[/b] (MIT).
+[/list]
+
+=== Files tab ===
+Main file: CausticLight-1.0.0.zip - "CausticLight 1.0.0"

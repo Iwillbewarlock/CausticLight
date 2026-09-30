@@ -1,0 +1,81 @@
+=== 모드 이름 ===
+CausticLight - 물빛
+
+=== 버전 ===
+1.0.0
+
+=== 카테고리 ===
+Visuals and Graphics
+
+=== 한 줄 요약 (255자 이내) ===
+이제 물이 빛을 튕깁니다. 등불, 횃불, 마법등, 해와 달의 빛이 일렁이는 물에 반사되어 벽, 다리 밑, 물 밑바닥에 비칩니다. 물은 알아서 찾고, 그늘은 정확하게, 밝기는 경로 추적 렌더에 맞췄습니다.
+
+=== 필요 모드 ===
+- SKSE64
+- Address Library for SKSE Plugins
+- 스카이림 스페셜 에디션 또는 애니버서리 에디션 (VR 미지원)
+선택: Community Shaders, Surface Tides
+
+=== 본문 (BBCode) ===
+[center][size=6][b]CausticLight[/b][/size]
+[size=3][i]물 위에서 춤추는 빛[/i][/size][/center]
+
+밤에 운하 옆 다리 밑에 서 보면 보입니다. 근처 등불 빛이 물에서 튕겨 올라와 만드는, 부드럽게 흔들리는 빛 그물입니다. 스카이림에는 이게 없었습니다. [b]CausticLight[/b] 는 벽, 천장, 다리 밑, 물 밑바닥에 이 물빛을 그려 줍니다. SKSE 플러그인이 빛을 한 번 더 칠하는 방식이라 셰이더 파일을 바꾸지 않습니다.
+
+[size=4][b]설정할 것이 없습니다[/b][/size]
+[list]
+[*][b]물을 알아서 찾습니다.[/b] 실내든 야외든 주변의 물을 1초 안에 찾아냅니다. 구역을 놓거나 패치를 깔 필요가 없습니다.
+[*][b]실제로 있는 빛을 씁니다.[/b] 놓인 등불, 손에 든 횃불, 주문 빛, 마법등, Light Placer 빛, 해와 달. 물에 가장 세게 닿는 셋을 각자의 색으로 반사합니다.
+[*][b]벽을 뚫지 않습니다.[/b] 빛마다 실제로 닿는 물만 반사하므로, 옆방 등불이 벽 너머로 비치지 않고 다리 밑 물은 햇빛을 받지 않습니다.
+[*][b]밝기가 자연스럽습니다.[/b] 반사된 빛을 그 면이 원래 받는 빛과 견줍니다. 등불을 등진 다리 밑은 또렷하게 빛나고, 등불을 정면으로 받는 벽에는 은은한 일렁임만 남습니다. 물리적인 세기는 블렌더 Cycles 경로 추적 렌더와 비교해 맞췄고, 기본값은 게임에서 잘 보이도록 그보다 조금 높게 잡았습니다. 원하면 낮출 수 있습니다.
+[*][b]물과 함께 움직입니다.[/b] 날씨, 바람, 헤엄치는 사람에 따라 무늬가 바뀝니다. [url=https://www.nexusmods.com/skyrimspecialedition/mods/191955]Surface Tides[/url] 가 있으면 실제로 계산된 물 표면에서 무늬를 가져오고, 걸어 들어갈 때 생기는 물결까지 비칩니다.
+[*][b]물 밑바닥에도 닿습니다.[/b] 수면에서 꺾인 빛이 바닥에 띠를 이루며 모이고, 깊고 탁할수록 흐려집니다.
+[*][b]멀리서는 그림자처럼 사라집니다.[/b] 게임의 그림자 거리만큼 보이고, 그림자가 사라지는 곳에서 함께 사라집니다.
+[*][b]번쩍이지 않습니다.[/b] 작은 변화로 빛이 서로 자리를 바꾸지 않고, 횃불의 흔들림도 부드럽게 다듬어 깜빡임이 없습니다.
+[/list]
+
+[size=4][b]설정[/b][/size]
+[code]Data\SKSE\Plugins\CausticLight.ini[/code]
+게임을 켠 채로 고쳐 저장해도 1~2초 안에 반영됩니다.
+[list]
+[*][b]fStrength[/b] (6.4) - 반사광 세기. 2.14 가 물리에 맞춘 값이고, 0 이면 꺼집니다.
+[*][b]fRippleContrast[/b] (1.0) - 물무늬 진하기. 0 이면 고른 빛, 최대 3.
+[*][b]fFloorStrength[/b] (1.0) - 물 밑바닥 무늬 세기.
+[*][b]bFollowShadowDistance[/b] (1) / [b]fMaxDistance[/b] (3000) - 물빛이 보이는 거리.
+[*][b]bUseSurfaceTides[/b] (1) - Surface Tides 가 있으면 그 물결을 씀.
+[/list]
+콘솔: [i]set CL_Enabled to 0[/i] / [i]1[/i] 로 끄고 켜기, [i]set CL_Strength to N[/i] 으로 이번 게임 동안만 세기 시험.
+
+[size=4][b]호환성[/b][/size]
+[list]
+[*][b]Community Shaders[/b] - 지원. 선형 조명과 역제곱 빛 설정을 읽어 맞춥니다. CS 파일은 건드리지 않습니다.
+[*][b]ENB[/b] - 코드로는 지원합니다(ENB SDK 로 빛 배율을 읽음). 다만 [b]아직 게임 안에서 확인하지 못했습니다[/b]. ENB 를 쓰신다면 [i]문서\My Games\Skyrim Special Edition\SKSE\CausticLight.log[/i] 의 [i]renderer light: ENB[/i] 줄과 [i]ENB light multipliers[/i] 줄, 그리고 다음을 알려 주세요: 불 켜진 물가에서 물빛이 보이는지, 깜빡임이 없는지, ENB 편집 창(Shift+Enter)을 열어도 괜찮은지.
+[*][b]Light Placer[/b] - 그 빛도 놓인 등불처럼 반사하고 그늘을 계산합니다.
+[*][b]파티클 라이트[/b](CS / ENB 의 불꽃 광채 빛)는 렌더러 안에서만 만들어져 반사할 수 없습니다.
+[*]ESL 표시 플러그인, 마스터 없음. 게임 도중에 넣거나 빼도 됩니다.
+[/list]
+
+[size=4][b]성능[/b][/size]
+RTX 3070 노트북에서 화면 전체가 물가일 때 한 화면에 약 0.15~0.2 ms, 가장 높을 때 약 0.5 ms.
+
+[size=4][b]알려진 한계[/b][/size]
+[list]
+[*]물과 벽 사이를 무언가가 가리는지는 화면에 보이는 것만 압니다.
+[*]폭이 약 1.6 m 보다 좁은 웅덩이는 놓칠 수 있습니다.
+[*]ENB 의 시간대별 빛 배율 곡선은 공개되지 않아 직선으로 섞습니다.
+[/list]
+
+[size=4][b]소스[/b][/size]
+CausticLight 는 GPL-3.0 오픈 소스입니다: [url=https://github.com/Iwillbewarlock/CausticLight]https://github.com/Iwillbewarlock/CausticLight[/url]
+
+[size=4][b]크레딧[/b][/size]
+[list]
+[*][b]Community Shaders[/b] 개발진 - CausticLight 가 거는 엔진 호출 지점 두 곳은 Community Shaders 의 참조에서 왔습니다.
+[*][b]NearMidnightNow[/b] (Dynamic Terrain Deformation) - 그 호출 지점을 DTD 의 훅에서 배웠습니다.
+[*][b]Surface Tides[/b] 와 제작자 - 그 물결 시뮬레이션을 같은 자료 형식으로 읽어 옵니다.
+[*][b]ScottieFox[/b] ([i]caustic-volume[/i], MIT, 라이선스 동봉) - 기본 물결무늬 생성 방식이 여기서 출발했습니다.
+[*][b]CommonLibSSE-NG[/b] (MIT).
+[/list]
+
+=== 파일 탭 ===
+메인 파일: CausticLight-1.0.0.zip - "CausticLight 1.0.0"
